@@ -1,0 +1,15 @@
+---
+# tasks file for lshake.create-inventories
+
+- name: create inventories for this organization
+  tower_inventory:
+    name: "{{ item.1.name }}"
+    description: "{{ item.1.description | default(omit) }}"
+    organization: "{{ item.0.name }}"
+    state: "{{ item.1.state }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
+  loop: "{{ ansible_tower.organizations | subelements('inventories') }}"
+  loop_control:
+    label: "{{ item.0.name }} {{ item.1.name }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"

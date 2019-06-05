@@ -1,0 +1,23 @@
+---
+- name: create sources for this inventory
+  tower_inventory_source:
+    name: "{{ this_source.name }}"
+    description: "{{ this_source.description | default(omit) }}"
+    inventory: "{{ this_inventory.1.name }}"
+    credential: "{{ this_source.credential | default(omit) }}"
+    state: "{{ this_source.state | default('present') }}"
+    source: "{{ this_source.source }}"
+    source_project: "{{ this_source.source_project | default(omit) }}"
+    source_path: "{{ this_source.source_path | default(omit)}}"
+    update_on_launch: "{{ this_source.update_on_launch | default('true') }}"
+    update_on_project_update: "{{ this_source.update_on_project_update | default(omit) }}"
+    overwrite_vars: "{{ this_source.overwrite_vars | default('true') }}"
+    source_vars: "{{ this_source.source_vars | default(omit) }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
+  loop: "{{ this_inventory.1.sources }}"
+  loop_control:
+    loop_var: this_source
+    label: "{{ this_inventory.0.name }} {{ this_source.name }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+

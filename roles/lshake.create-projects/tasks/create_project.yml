@@ -1,0 +1,30 @@
+---
+- name: create projects for this organization
+  tower_project:
+    name: "{{ item.1.name }}"
+    description: "{{ item.1.description | default(omit) }}"
+    organization: "{{ item.0.name }}"
+    state: "{{ item.1.state }}"
+    scm_type: "{{ item.1.scm_type }}"
+    scm_url: "{{ item.1.scm_url }}"
+    scm_credential: "{{ item.1.scm_credential }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+  register: create_project_result
+
+- name: check status
+  uri:
+    url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/projects/{{ create_project_result.id }}/"
+    user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
+    password: "{{ ansible_tower.admin_password }}"
+    force_basic_auth: yes
+    method: GET
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: "{{ ansible_tower.verify_ssl | default('true') }}"
+  until: project_synced.json.status == 'successful'
+  retries: 60
+  register: project_synced
+  when: create_project_result.state == 'present'

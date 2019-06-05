@@ -1,0 +1,14 @@
+---
+# tasks file for lshake.ansible_tower_create_environment
+
+- name: create the tower admin organization
+  tower_organization:
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    state: "{{ item.state }}"
+    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+  loop: "{{ ansible_tower.organizations }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"

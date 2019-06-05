@@ -1,0 +1,10 @@
+---
+# tasks file for lshake.create-projects
+
+- name: create projects for this organization
+  include_tasks: create_project.yml
+  loop: "{{ ansible_tower.organizations | subelements('projects') }}"
+  loop_control:
+    label: "{{ item.0.name }} {{ item.1.name }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+  register: create_project_results

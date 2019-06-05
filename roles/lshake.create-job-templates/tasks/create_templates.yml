@@ -1,0 +1,9 @@
+---
+- name: update extra_vars for template
+  include_tasks: create_template.yml
+  loop: "{{ this_project.1.templates }}"
+  loop_control:
+    loop_var: this_template
+    label: "{{ this_project.0.name }} {{ this_template.name }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+  register: new_job_template

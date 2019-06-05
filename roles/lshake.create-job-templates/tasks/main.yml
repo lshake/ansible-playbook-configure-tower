@@ -1,0 +1,11 @@
+---
+# tasks file for lshake.create-job-templates
+
+- name: include tasks for each project
+  include_tasks: create_templates.yml
+  loop: "{{ ansible_tower.organizations | subelements('projects') }}"
+  loop_control:
+    loop_var: this_project
+    label: "{{ this_project.0.name }} {{ this_project.1.name }}"
+  when: this_project.1.templates is defined
+  no_log: "{{ ansible_debug_no_log | default('true') }}"

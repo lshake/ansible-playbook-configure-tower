@@ -1,0 +1,37 @@
+---
+- name: create template "{{ this_template.name }}"
+  tower_job_template:
+    name: "{{ this_template.name }}"
+    description: "{{ this_template.description | default(omit) }}"
+    project: "{{ this_project.1.name }}"
+    job_type: "{{ this_template.job_type | default('run') }}"
+    playbook: "{{ this_template.playbook }}"
+    inventory: "{{ this_template.inventory }}"
+    credential: "{{ this_template.credential }}"
+    vault_credential: "{{ this_template.vault_credential | default(omit) }}"
+    state: "{{ this_template.state | default('present') }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
+    survey_enabled: "{{ this_template.survey_enabled | default(omit) }}"
+    survey_spec: "{{ this_template.survey_spec | default({}) | to_json | default(omit) }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+  register: new_job_template
+
+- name: add patch data to the job template "{{ this_template.name }}""
+  uri:
+    url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/job_templates/{{ new_job_template.id }}/"
+    user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
+    password: "{{ ansible_tower.admin_password }}"
+    force_basic_auth: yes
+    method: PATCH
+    body: "{{ this_template.patch | to_json }}"
+    body_format: 'json'
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: "{{ ansible_tower.verify_ssl | default('true') }}"
+  when:
+    - this_template.patch is defined
+    - new_job_template.state == 'present'
+
+

@@ -1,0 +1,124 @@
+---
+ansible_tower_environment_name: newenv
+ansible_tower_environment_description: "My New Environment"
+ansible_tower_environment_scm_user: "lshake"
+ansible_tower_environment_machine_user: "lshake"
+ansible_tower_environment_ssh_key_data: "/home/vagrant/scm_id_rsa" # fixed in 2.8 to use content
+ansible_tower_environment_ssh_key_unlock: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      39646433383064626633383464353335326233323132626631633462393065396164336336303735
+      3738653239636638386134363862396437373038363837360a363739366266633537396338613630
+      33623333393865613165613732333237633166363739336335613632323366323962623935653863
+      6238393839363666340a616634623933623836616233393036316537373834396533333163623133
+      6639
+ansible_tower_envinronment_sat6_password: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      37633862666131326134636533373234666438373339336433373030353332393661393861386136
+      6366383166613436366561323637663430323566313738320a663165626564383130336661333961
+      36373238626630653733313930626161643335376434313436613332393537326565626430356462
+      3130613230623333310a346237633032383937326636633133393639313632303737386533306163
+      6336
+ansible_tower_environment_vault_password: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      33653766343736303130316461663063633439313563323235623132396162633138346438326139
+      3738346639376133656563636161383235306664363333660a386137333139336464383536636538
+      63353934653363643631343163313331353937613437623466656565366331373536333430333639
+      3261306362386130370a363838366633333737616539353664333863303263323865616366623930
+      6632
+ansible_tower_environment_state: present
+ansible_tower_overides:
+    organizations:
+      - name: "{{ ansible_tower_environment_name }}"
+        description: "{{ ansible_tower_environment_description }}"
+        state: "{{ ansible_tower_environment_state }}"
+        credentials:
+          - name: "scm_{{ ansible_tower_environment_name }}"
+            description: "Source Control Credential for {{ ansible_tower_environment_name }}"
+            kind: scm
+            username: "{{ ansible_tower_environment_scm_user }}"
+            ssh_key_data: "{{ ansible_tower_environment_ssh_key_data }}"
+            ssh_key_unlock: "{{ ansible_tower_environment_ssh_key_unlock }}"
+            state: present
+          - name: "machine_{{ ansible_tower_environment_name }}"
+            description: "Machine Credential for {{ ansible_tower_environment_name }}"
+            kind: ssh
+            username: "{{ ansible_tower_environment_machine_user }}"
+            ssh_key_data: "{{ ansible_tower_environment_ssh_key_data }}"
+            ssh_key_unlock: "{{ ansible_tower_environment_ssh_key_unlock }}"
+            state: present
+          - name: "vault_{{ ansible_tower_environment_name }}"
+            description: "Vault Credential for {{ ansible_tower_environment_name }}"
+            kind: vault
+            vault_password: "{{ ansible_tower_environment_vault_password }}"
+            state: present
+        projects:
+          - name: "lab_infra_{{ ansible_tower_environment_name }}"
+            description: "Home Lab Project for {{ ansible_tower_environment_name }}"
+            state: present
+            scm_type: git
+            scm_url: "git@github.com:lshake/ansible-playbook-lab_infra.git"
+            scm_credential: "scm_{{ ansible_tower_environment_name }}"
+            templates:
+              - name: "run libvirtvms {{ ansible_tower_environment_name }}"
+                job_type: "run"
+                inventory: "shakey_towers_{{ ansible_tower_environment_name }}"
+                playbook: "libvirt_vms.yml"
+                credential: "machine_{{ ansible_tower_environment_name }}"
+                vault_credential: "vault_{{ ansible_tower_environment_name }}"
+                state: "present"
+              - name: "run ovirt host state {{ ansible_tower_environment_name }}"
+                job_type: "run"
+                inventory: "shakey_towers_{{ ansible_tower_environment_name }}"
+                playbook: "ovirt_hosts_state.yml"
+                state: "present"
+                patch:
+                  extra_vars: |
+                    ---
+                    ovirt_hosts:
+                      - defiant
+                      - enterprise
+                survey_spec:
+                  name: "choose state"
+                  description: "ovirt host state"
+                  spec:
+                    - question_name: 'Host state'
+                      question_description: ''
+                      variable: 'ovirt_host_state'
+                      type: 'multiplechoice'
+                      required: false
+                      default: 'stopped'
+                      choices:
+                        - started
+                        - stopped
+                        - maintenance
+                survey_enabled: true
+                credential: "machine_{{ ansible_tower_environment_name }}"
+                vault_credential: "vault_{{ ansible_tower_environment_name }}"
+              - name: "run libvirthosts {{ ansible_tower_environment_name }}"
+                job_type: "run"
+                inventory: "shakey_towers_{{ ansible_tower_environment_name }}"
+                playbook: "libvirt_hosts.yml"
+                credential: "machine_{{ ansible_tower_environment_name }}"
+                vault_credential: "vault_{{ ansible_tower_environment_name }}"
+                state: "present"
+          - name: "inventory_{{ ansible_tower_environment_name }}"
+            description: "Inventory Project for {{ ansible_tower_environment_name }}"
+            state: present
+            scm_type: git
+            scm_url: "git@github.com:lshake/inventory.git"
+            scm_credential: "scm_{{ ansible_tower_environment_name }}"
+        inventories:
+          - name: "shakey_towers_{{ ansible_tower_environment_name }}"
+            description: "Shakey Towers Inventory for {{ ansible_tower_environment_name }}"
+            state: present
+            sources:
+              - name: "project_source_{{ ansible_tower_environment_name }}"
+                source: scm
+                source_project: "inventory_{{ ansible_tower_environment_name }}"
+                source_path: ""
+                source_vars: |
+                    FOREMAN_PASSWORD: {{ ansible_tower_envinronment_sat6_password }}
+                    FOREMAN_SSL_VERIFY: False
+                update_on_launch: true
+                overwrite_vars: true
+                state: present

@@ -1,0 +1,22 @@
+---
+# tasks file for lshake.create-credentials
+
+- name: create credentials for this organization
+  tower_credential:
+    name: "{{ item.1.name }}"
+    description: "{{ item.1.description | default(omit) }}"
+    organization: "{{ item.0.name }}"
+    state: "{{ item.1.state }}"
+    kind: "{{ item.1.kind }}"
+    username: "{{ item.1.username | default(omit) }}"
+    password: "{{ item.1.password | default(omit) }}"
+    ssh_key_data: "{{ item.1.ssh_key_data | default(omit) }}"
+    ssh_key_unlock: "{{ item.1.ssh_key_unlock | default(omit) }}"
+    vault_password: "{{ item.1.vault_password | default(omit) }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
+    host: "{{ item.1.host | default(omit) }}"
+  loop: "{{ ansible_tower.organizations | subelements('credentials') }}"
+  loop_control:
+    label: "{{ item.0.name }} {{ item.1.name }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
