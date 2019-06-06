@@ -4,7 +4,7 @@ ansible_tower_environment_name: "{{ environment_name }}"
 ansible_tower_environment_description: "My New Environment"
 ansible_tower_environment_scm_user: "lshake"
 ansible_tower_environment_machine_user: "lshake"
-ansible_tower_environment_ssh_key_data: "/home/vagrant/scm_id_rsa" # fixed in 2.8 to use content
+ansible_tower_environment_ssh_key_data: "{{ lookup('file', 'files/scm_id_rsa') }}"
 ansible_tower_environment_ssh_key_unlock: !vault |
       $ANSIBLE_VAULT;1.1;AES256
       39646433383064626633383464353335326233323132626631633462393065396164336336303735
