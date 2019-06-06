@@ -19,13 +19,6 @@ ansible_tower_envinronment_sat6_password: !vault |
       36373238626630653733313930626161643335376434313436613332393537326565626430356462
       3130613230623333310a346237633032383937326636633133393639313632303737386533306163
       6336
-ansible_tower_environment_vault_password: !vault |
-      $ANSIBLE_VAULT;1.1;AES256
-      33653766343736303130316461663063633439313563323235623132396162633138346438326139
-      3738346639376133656563636161383235306664363333660a386137333139336464383536636538
-      63353934653363643631343163313331353937613437623466656565366331373536333430333639
-      3261306362386130370a363838366633333737616539353664333863303263323865616366623930
-      6632
 ansible_tower_environment_state: present
 ansible_tower_overides:
     organizations:
@@ -43,7 +36,7 @@ ansible_tower_overides:
           - name: "vault_{{ ansible_tower_environment_name }}"
             description: "Vault Credential for {{ ansible_tower_environment_name }}"
             kind: vault
-            vault_password: "{{ ansible_tower_environment_vault_password }}"
+            vault_password: "{{ vault_password }}"
             state: present
           - name: "tower_{{ ansible_tower_environment_name }}"
             description: "Tower Credential for {{ ansible_tower_environment_name }}"
@@ -92,6 +85,12 @@ ansible_tower_overides:
                       question_description: 'Enter the new organizaiton Name'
                       variable: 'environment_name'
                       type: 'text'
+                      required: true
+                      default: 'new_environemnt'
+                    - question_name: 'Vault Password'
+                      question_description: 'Enter the new environment Vault Password'
+                      variable: 'vault_password'
+                      type: 'password'
                       required: true
                       default: 'new_environemnt'
                 survey_enabled: true
