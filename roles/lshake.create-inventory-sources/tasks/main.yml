@@ -8,3 +8,4 @@
     loop_var: this_inventory
     label: "{{ this_inventory.0.name }} {{ this_inventory.1.name }}"
   no_log: "{{ ansible_debug_no_log | default('true') }}"
+  when: this_inventory.1.sources is defined

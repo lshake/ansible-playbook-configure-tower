@@ -13,8 +13,10 @@
     ssh_key_data: "{{ item.1.ssh_key_data | default(omit) }}"
     ssh_key_unlock: "{{ item.1.ssh_key_unlock | default(omit) }}"
     vault_password: "{{ item.1.vault_password | default(omit) }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
     tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
-    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
     host: "{{ item.1.host | default(omit) }}"
   loop: "{{ ansible_tower.organizations | subelements('credentials') }}"
   loop_control:

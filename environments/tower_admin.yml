@@ -47,9 +47,16 @@ ansible_tower_overides:
           - name: "tower_{{ ansible_tower_environment_name }}"
             description: "Tower Credential for {{ ansible_tower_environment_name }}"
             kind: tower
-            tower_host: "192.168.56.10"
+            host: "192.168.56.10"
             username: "{{ ansible_tower.admin_username }}"
             password: "{{ ansible_tower.admin_password }}"
+            state: present
+          - name: "machine_{{ ansible_tower_environment_name }}"
+            description: "Machine Credential for {{ ansible_tower_environment_name }}"
+            kind: ssh
+            username: "{{ ansible_tower_environment_machine_user }}"
+            ssh_key_data: "{{ ansible_tower_environment_ssh_key_data }}"
+            ssh_key_unlock: "{{ ansible_tower_environment_ssh_key_unlock }}"
             state: present
         projects:
           - name: "Tower Admin"
@@ -102,4 +109,5 @@ ansible_tower_overides:
             hosts:
               - name: tower
                 variables:
-                  - connection: local
+                  ansible_host: localhost
+                  ansible_connection: local

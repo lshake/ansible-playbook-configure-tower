@@ -1,13 +1,15 @@
 ---
 - name: create hosts for this inventory
-  tower_hosts:
+  tower_host:
     name: "{{ this_host.name }}"
     description: "{{ this_host.description | default(omit) }}"
     inventory: "{{ this_inventory.1.name }}"
     state: "{{ this_host.state | default('present') }}"
-    variables: "{{ this_host.variables | default(omit) }}"
+    variables: "{{ this_host.variables | default({}) | to_yaml() | default(omit) }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
     tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
-    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
   loop: "{{ this_inventory.1.hosts }}"
   loop_control:
     loop_var: this_host

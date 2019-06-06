@@ -13,8 +13,10 @@
     update_on_project_update: "{{ this_source.update_on_project_update | default(omit) }}"
     overwrite_vars: "{{ this_source.overwrite_vars | default('true') }}"
     source_vars: "{{ this_source.source_vars | default(omit) }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
     tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
-    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
   loop: "{{ this_inventory.1.sources }}"
   loop_control:
     loop_var: this_source

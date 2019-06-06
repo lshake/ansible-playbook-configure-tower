@@ -7,9 +7,19 @@
     description: "{{ item.1.description | default(omit) }}"
     organization: "{{ item.0.name }}"
     state: "{{ item.1.state }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
     tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
-    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
   loop: "{{ ansible_tower.organizations | subelements('inventories') }}"
   loop_control:
     label: "{{ item.0.name }} {{ item.1.name }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+
+- name: include hosts tasks for each inventory
+  include_tasks: create_hosts.yml
+  loop: "{{ ansible_tower.organizations | subelements('inventories') }}"
+  loop_control:
+    loop_var: this_inventory
+    label: "{{ this_inventory.0.name }} {{ this_inventory.1.name }}"
   no_log: "{{ ansible_debug_no_log | default('true') }}"

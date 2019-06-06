@@ -6,7 +6,9 @@
     name: "{{ item.name }}"
     description: "{{ item.description }}"
     state: "{{ item.state }}"
-    tower_config_file: "{{ ansible_tower.tower_cli_file | default(omit) }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
     tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
   loop: "{{ ansible_tower.organizations }}"
   loop_control:
