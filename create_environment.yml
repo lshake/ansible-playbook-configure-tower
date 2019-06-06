@@ -12,9 +12,13 @@
       verify_ssl: 'false'
     ansible_debug_no_log: "{{ ansible_verbosity | bool }}"
     tower_verify_ssl: 'false'
+    environment_type: tower_admin
 
+  vars_files:
+    - "environments/{{ environment_type }}.yml"
 
   pre_tasks:
+
     - name: merge new environemnt vars
       set_fact:
         ansible_tower: "{{ ansible_tower|default({})|combine(ansible_tower_overides) }}"

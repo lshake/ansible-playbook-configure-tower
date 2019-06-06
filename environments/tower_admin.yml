@@ -1,5 +1,6 @@
 ---
-ansible_tower_environment_name: admin
+environemnt_name: newenv
+ansible_tower_environment_name: "{{ environment_name }}"
 ansible_tower_environment_description: "Tower Admin Org"
 ansible_tower_environment_scm_user: "lshake"
 ansible_tower_environment_machine_user: "lshake"
@@ -74,34 +75,26 @@ ansible_tower_overides:
                 credential: "machine_{{ ansible_tower_environment_name }}"
                 vault_credential: "vault_{{ ansible_tower_environment_name }}"
                 state: "present"
-#               - name: "run ovirt host state {{ ansible_tower_environment_name }}"
-#                 job_type: "run"
-#                 inventory: "shakey_towers_{{ ansible_tower_environment_name }}"
-#                 playbook: "ovirt_hosts_state.yml"
-#                 state: "present"
-#                 patch:
-#                   extra_vars: |
-#                     ---
-#                     ovirt_hosts:
-#                       - defiant
-#                       - enterprise
-#                 survey_spec:
-#                   name: "choose state"
-#                   description: "ovirt host state"
-#                   spec:
-#                     - question_name: 'Host state'
-#                       question_description: ''
-#                       variable: 'ovirt_host_state'
-#                       type: 'multiplechoice'
-#                       required: false
-#                       default: 'stopped'
-#                       choices:
-#                         - started
-#                         - stopped
-#                         - maintenance
-#                 survey_enabled: true
-#                 credential: "machine_{{ ansible_tower_environment_name }}"
-#                 vault_credential: "vault_{{ ansible_tower_environment_name }}"
+                survey_spec:
+                  name: "New Organization Details"
+                  description: "Enter the details for the tower Organisation"
+                  spec:
+                    - question_name: 'Environment Type'
+                      question_description: 'Select the organization template'
+                      variable: 'environment_type'
+                      type: 'multiplechoice'
+                      required: true
+                      default: 'shakey_towers'
+                      choices:
+                        - shakey_towers
+                        - tower_admin
+                    - question_name: 'Organization Name'
+                      question_description: 'Enter the new organizaiton Name'
+                      variable: 'environment_name'
+                      type: 'text'
+                      required: true
+                      default: 'new_environemnt'
+                survey_enabled: true
         inventories:
           - name: "Admin Inventory"
             description: "Shakey Towers Inventory for {{ ansible_tower_environment_name }}"

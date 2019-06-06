@@ -28,7 +28,9 @@
     validate_certs: "{{ ansible_tower.verify_ssl | default('true') }}"
     body: ""
     status_code: 202
-  when: create_project_result.state == 'present'
+  when:
+    - create_project_result.state == 'present'
+    - create_project_result is not changed
 
 - name: check status
   uri:

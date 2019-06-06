@@ -1,5 +1,6 @@
 ---
-ansible_tower_environment_name: newenv
+environemnt_name: newenv
+ansible_tower_environment_name: "{{ environment_name }}"
 ansible_tower_environment_description: "My New Environment"
 ansible_tower_environment_scm_user: "lshake"
 ansible_tower_environment_machine_user: "lshake"
