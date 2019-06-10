@@ -1,0 +1,34 @@
+---
+- name: create teams for this organization
+  tower_team:
+    name: "{{ team.1.name }}"
+    description: "{{ team.1.description | default(omit) }}"
+    organization: "{{ team.0.name }}"
+    state: "{{ team.1.state | default('present') }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+
+- name: debug
+  debug:
+    var: team.1
+
+- name: create users for this team
+  tower_user:
+    username: "{{ user.username }}"
+    description: "{{ user.description | default(omit) }}"
+    email: "{{ user.email }}"
+    state: "{{ user.state | default('present') }}"
+    password: "{{ user.password | default('present') }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+  loop: "{{ team.1.users }}"
+  loop_control:
+    loop_var: user
+    label: "{{ team.0.name }} {{ user.username }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+

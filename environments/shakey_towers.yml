@@ -116,3 +116,22 @@ ansible_tower_overides:
                 update_on_launch: true
                 overwrite_vars: true
                 state: present
+        teams:
+          - name: "org_admin_{{ ansible_tower_environment_name }}"
+            description: "Admins for the organization {{ ansible_tower_environment_name }}"
+            users:
+              - username: john
+                password: 'john'
+                email: 'john@example.com'
+          - name: "users_{{ ansible_tower_environment_name }}"
+            description: "Users for the organization {{ ansible_tower_environment_name }}"
+            users:
+              - username: paul
+                password: 'paul'
+                email: 'john@example.com'
+          - name: "devops_{{ ansible_tower_environment_name }}"
+            description: "DevOps for the organization {{ ansible_tower_environment_name }}"
+            users:
+              - username: ringo
+                password: 'ringo'
+                email: 'john@example.com'

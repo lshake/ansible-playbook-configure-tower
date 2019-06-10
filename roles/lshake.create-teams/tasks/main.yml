@@ -1,0 +1,10 @@
+---
+# tasks file for lshake.create-teams
+
+- name: create teams for this organization
+  include_tasks: create_teams.yml
+  loop: "{{ lookup('subelements', ansible_tower.organizations, 'teams', {'skip_missing': True}) }}"
+  loop_control:
+    label: "{{ team.0.name }} {{ team.1.name }}"
+    loop_var: team
+  no_log: "{{ ansible_debug_no_log | default('true') }}"

@@ -67,6 +67,7 @@ ansible_tower_overides:
                 playbook: "create_environment.yml"
                 credential: "machine_{{ ansible_tower_environment_name }}"
                 vault_credential: "vault_{{ ansible_tower_environment_name }}"
+                tower_credential: "tower_{{ ansible_tower_environment_name }}"
                 state: "present"
                 survey_spec:
                   name: "New Organization Details"
