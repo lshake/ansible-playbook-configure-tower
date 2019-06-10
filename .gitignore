@@ -34,3 +34,6 @@ tower_cli_data/*
 
 # Ansible config
 ansible.cfg
+
+# Don't upload the ssh keys
+files/*id_rsa
