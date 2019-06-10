@@ -36,3 +36,4 @@
     - role: lshake.create-inventories
     - role: lshake.create-inventory-sources
     - role: lshake.create-job-templates
+    - role: lshake.create-teams

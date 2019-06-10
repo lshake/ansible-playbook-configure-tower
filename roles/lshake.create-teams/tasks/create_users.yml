@@ -1,0 +1,12 @@
+---
+- name: create users for this team
+  tower_users:
+    username: "{{ user.1.username }}"
+    description: "{{ user.1.description | default(omit) }}"
+    organization: "{{ team.0.name }}"
+    state: "{{ user.1.state | default('present') }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"

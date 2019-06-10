@@ -19,7 +19,7 @@
   no_log: "{{ ansible_debug_no_log | default('true') }}"
   register: new_job_template
 
-- name: add patch data to the job template "{{ this_template.name }}""
+- name: add patch data to the job template "{{ this_template.name }}"
   uri:
     url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/job_templates/{{ new_job_template.id }}/"
     user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
@@ -36,4 +36,41 @@
     - this_template.patch is defined
     - new_job_template.state == 'present'
 
+- name: lookup the the tower credentials id
+  uri:
+    url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/credentials/?search={{ this_template.tower_credential }}"
+    user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
+    password: "{{ ansible_tower.admin_password }}"
+    force_basic_auth: yes
+    method: GET
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: "{{ ansible_tower.verify_ssl | default('true') }}"
+  register: credential_lookup
+  when:
+    - this_template.tower_credential is defined
+    - new_job_template.state == 'present'
+
+# This is a bit horrible, 400 is not a sucess
+- name: add the tower credential  "{{ this_template.name }}"
+  uri:
+    url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/job_templates/{{ new_job_template.id }}/credentials/"
+    user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
+    password: "{{ ansible_tower.admin_password }}"
+    force_basic_auth: yes
+    method: POST
+    body: |
+      { 'id': {{ credential_lookup.json.results.0.id}} }
+    body_format: 'json'
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: "{{ ansible_tower.verify_ssl | default('true') }}"
+    status_code: [204,400]
+  when:
+    - this_template.tower_credential is defined
+    - new_job_template.state == 'present'
+    - credential_lookup.json.count == 1
 
