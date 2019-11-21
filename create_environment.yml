@@ -3,18 +3,8 @@
   connection: local
   gather_facts: false
 
-  vars:
-    ansible_tower:
-      url: https://localhost
-      admin_username: 'admin'
-      admin_password: 'admin123'
-      tower_cli_file: '~/.tower_cli.cfg'
-      verify_ssl: 'false'
-    ansible_debug_no_log: "{{ ansible_verbosity | bool }}"
-    tower_verify_ssl: 'false'
-    environment_type: tower_admin
-
   vars_files:
+    - "vars/configure_tower_defaults.yml"
     - "environments/{{ environment_type }}.yml"
 
   pre_tasks:
