@@ -3,7 +3,7 @@ environemnt_name: newenv
 ansible_tower_environment_name: "{{ environment_name }}"
 ansible_tower_environment_description: "My New Environment"
 ansible_tower_environment_scm_user: "lshake"
-ansible_tower_environment_machine_user: "lshake"
+ansible_tower_environment_machine_user: "lshakesp"
 ansible_tower_environment_ssh_key_data: "{{ lookup('file', 'files/scm_id_rsa') }}"
 ansible_tower_environment_ssh_key_unlock: !vault |
       $ANSIBLE_VAULT;1.1;AES256

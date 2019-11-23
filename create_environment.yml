@@ -19,7 +19,7 @@
         verbosity: 4
 
   roles:
-    - role: lshake.tower-modules
+#     - role: lshake.tower-modules
     - role: lshake.create-organisations
     - role: lshake.create-credentials
     - role: lshake.create-projects

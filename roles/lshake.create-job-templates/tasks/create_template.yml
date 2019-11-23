@@ -8,7 +8,7 @@
     playbook: "{{ this_template.playbook }}"
     inventory: "{{ this_template.inventory }}"
     credential: "{{ this_template.credential }}"
-    vault_credential: "{{ this_template.vault_credential | default(omit) }}"
+#     vault_credential: "{{ this_template.vault_credential | default(omit) }}"
     state: "{{ this_template.state | default('present') }}"
     tower_host: "{{ ansible_tower.url | default(omit) }}"
     tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
@@ -16,6 +16,7 @@
     tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
     survey_enabled: "{{ this_template.survey_enabled | default(omit) }}"
     survey_spec: "{{ this_template.survey_spec | default({}) | to_json | default(omit) }}"
+    skip_tags: "{{ this_template.skip_tags | default(omit)}}"
   no_log: "{{ ansible_debug_no_log | default('true') }}"
   register: new_job_template
 
@@ -36,7 +37,7 @@
     - this_template.patch is defined
     - new_job_template.state == 'present'
 
-- name: lookup the the tower credentials id
+- name: lookup the the tower credentials id "{{ this_template.tower_credential }}"
   uri:
     url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/credentials/?search={{ this_template.tower_credential }}"
     user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
@@ -48,13 +49,13 @@
       Content-Type: "application/json"
       Accept: "application/json"
     validate_certs: "{{ ansible_tower.verify_ssl | default('true') }}"
-  register: credential_lookup
+  register: tower_credential_lookup
   when:
     - this_template.tower_credential is defined
     - new_job_template.state == 'present'
 
 # This is a bit horrible, 400 is not a sucess
-- name: add the tower credential  "{{ this_template.name }}"
+- name: add the tower credential for template "{{ this_template.name }}"
   uri:
     url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/job_templates/{{ new_job_template.id }}/credentials/"
     user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
@@ -62,7 +63,7 @@
     force_basic_auth: yes
     method: POST
     body: |
-      { 'id': {{ credential_lookup.json.results.0.id}} }
+      { 'id': {{ tower_credential_lookup.json.results.0.id}} }
     body_format: 'json'
     headers:
       Content-Type: "application/json"
@@ -72,5 +73,43 @@
   when:
     - this_template.tower_credential is defined
     - new_job_template.state == 'present'
-    - credential_lookup.json.count == 1
+    - tower_credential_lookup.json.count == 1
+
+- name: lookup the the vault credentials id "{{ this_template.vault_credential }}"
+  uri:
+    url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/credentials/?search={{ this_template.vault_credential }}"
+    user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
+    password: "{{ ansible_tower.admin_password }}"
+    force_basic_auth: yes
+    method: GET
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: "{{ ansible_tower.verify_ssl | default('true') }}"
+  register: vault_credential_lookup
+  when:
+    - this_template.vault_credential is defined
+    - new_job_template.state == 'present'
+
+# This is a bit horrible, 400 is not a sucess
+- name: add the vault credential for template "{{ this_template.name }}"
+  uri:
+    url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/job_templates/{{ new_job_template.id }}/credentials/"
+    user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"
+    password: "{{ ansible_tower.admin_password }}"
+    force_basic_auth: yes
+    method: POST
+    body: |
+      { 'id': {{ vault_credential_lookup.json.results.0.id}} }
+    body_format: 'json'
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: "{{ ansible_tower.verify_ssl | default('true') }}"
+    status_code: [204,400]
+  when:
+    - this_template.vault_credential is defined
+    - new_job_template.state == 'present'
+    - vault_credential_lookup.json.count == 1
 
