@@ -75,7 +75,7 @@
     - new_job_template.state == 'present'
     - tower_credential_lookup.json.count == 1
 
-- name: lookup the the vault credentials id "{{ this_template.vault_credential }}"
+- name: lookup the the vault credentials id "{{ this_template.tower_credential }}"
   uri:
     url: "{{ ansible_tower.url | regex_replace('\\/$','')}}/api/v2/credentials/?search={{ this_template.vault_credential }}"
     user: "{{ ansible_tower.admin_username | default(default_ansible_tower_admin_username) }}"

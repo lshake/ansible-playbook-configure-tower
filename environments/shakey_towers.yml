@@ -6,21 +6,76 @@ ansible_tower_environment_scm_user: "lshake"
 ansible_tower_environment_machine_user: "lshakesp"
 ansible_tower_environment_ssh_key_data: "{{ lookup('file', 'files/scm_id_rsa') }}"
 ansible_tower_environment_ssh_key_unlock: !vault |
-      $ANSIBLE_VAULT;1.1;AES256
-      39646433383064626633383464353335326233323132626631633462393065396164336336303735
-      3738653239636638386134363862396437373038363837360a363739366266633537396338613630
-      33623333393865613165613732333237633166363739336335613632323366323962623935653863
-      6238393839363666340a616634623933623836616233393036316537373834396533333163623133
-      6639
+          $ANSIBLE_VAULT;1.1;AES256
+          39646433383064626633383464353335326233323132626631633462393065396164336336303735
+          3738653239636638386134363862396437373038363837360a363739366266633537396338613630
+          33623333393865613165613732333237633166363739336335613632323366323962623935653863
+          6238393839363666340a616634623933623836616233393036316537373834396533333163623133
+          6639
 ansible_tower_envinronment_sat6_password: !vault |
-      $ANSIBLE_VAULT;1.1;AES256
-      37633862666131326134636533373234666438373339336433373030353332393661393861386136
-      6366383166613436366561323637663430323566313738320a663165626564383130336661333961
-      36373238626630653733313930626161643335376434313436613332393537326565626430356462
-      3130613230623333310a346237633032383937326636633133393639313632303737386533306163
-      6336
+          $ANSIBLE_VAULT;1.1;AES256
+          61653030373365626239333339306132373733383037303530643936643632313264393436663665
+          3863316231373964396138333233653633653639643464350a383736313038333034386366653334
+          30356437396264623032326537353962623332626333613930656661336131383438663734646232
+          6561316363356138640a333465623831623239613235653336376663653735323131663937343631
+          6532
 ansible_tower_environment_state: present
 ansible_tower_overides:
+    credential_types:
+      - name: "foreman_credential_{{ ansible_tower_environment_name }}"
+        description: "Foreman.py inventory credential type"
+        state: present
+        kind: cloud
+        injectors:
+          env:
+            FOREMAN_INI_PATH: !unsafe '{{ tower.filename }}'
+          file:
+            template: !unsafe |-
+              [foreman]
+              url = {{ url }}
+              user = {{ username }}
+              password = {{ password }}
+              ssl_verify = True
+              host_filters = {{ host_filters }}
+
+              [ansible]
+              group_patterns = ["{app}-{tier}-{color}",
+                            "{app}-{color}",
+                            "{app}",
+                            "{tier}"]
+              group_prefix = foreman_
+              want_facts = {{ want_facts }}
+              want_hostcollections = {{ want_hostcollections }}
+
+              [cache]
+              path = .
+              scan_new_hosts = True
+              max_age = 60
+        inputs:
+          fields:
+            - id: url
+              type: string
+              label: URL
+            - id: username
+              type: string
+              label: Username
+            - id: password
+              type: string
+              label: Password
+              secret: true
+            - id: host_filters
+              type: string
+              label: Host Filters
+              help_text: Leave blank for all hosts.
+            - id: want_hostcollections
+              type: boolean
+              label: Return Host Collections
+            - id: want_facts
+              type: boolean
+              label: Include Satellite Facts
+          required:
+            - username
+            - password
     organizations:
       - name: "{{ ansible_tower_environment_name }}"
         description: "{{ ansible_tower_environment_description }}"
@@ -45,6 +100,19 @@ ansible_tower_overides:
             kind: vault
             vault_password: "{{ vault_password }}"
             state: present
+        custom_credentials:
+          - name: "foreman_credential_{{ ansible_tower_environment_name }}"
+            description: "Foreman Inventory Credential for {{ ansible_tower_environment_name }}"
+            kind: cloud
+            type: "foreman_credential_{{ ansible_tower_environment_name }}"
+            cloud_password: "{{ ansible_tower_envinronment_sat6_password }}"
+            state: present
+            inputs:
+              url: "https://sat6c.lab.shakey.org/"
+              username: "admin"
+              password: "{{ ansible_tower_envinronment_sat6_password }}"
+              want_facts: true
+              want_hostcollections: true
         projects:
           - name: "lab_infra_{{ ansible_tower_environment_name }}"
             description: "Home Lab Project for {{ ansible_tower_environment_name }}"
@@ -53,6 +121,7 @@ ansible_tower_overides:
             scm_url: "git@github.com:lshake/ansible-playbook-lab_infra.git"
             scm_credential: "scm_{{ ansible_tower_environment_name }}"
             templates:
+
               - name: "run libvirtvms {{ ansible_tower_environment_name }}"
                 job_type: "run"
                 inventory: "shakey_towers_{{ ansible_tower_environment_name }}"
@@ -116,6 +185,7 @@ ansible_tower_overides:
                 update_on_launch: true
                 overwrite_vars: true
                 state: present
+                credential: "foreman_credential_{{ ansible_tower_environment_name }}"
         teams:
           - name: "org_admin_{{ ansible_tower_environment_name }}"
             description: "Admins for the organization {{ ansible_tower_environment_name }}"

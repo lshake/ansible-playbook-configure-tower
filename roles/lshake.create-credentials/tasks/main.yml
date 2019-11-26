@@ -1,6 +1,23 @@
 ---
 # tasks file for lshake.create-credentials
 
+- name: create credentials types for this organization
+  tower_credential_type:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    state: "{{ item.state }}"
+    kind: "{{ item.kind }}"
+    inputs: "{{ item.inputs }}"
+    injectors: "{{ item.injectors }}"
+    vault_password: "{{ item.vault_password | default(omit) }}"
+    tower_host: "{{ ansible_tower.url | default(omit) }}"
+    tower_username: "{{ ansible_tower.tower_username | default(omit) }}"
+    tower_password: "{{ ansible_tower.tower_password | default(omit) }}"
+    tower_verify_ssl: "{{ ansible_tower.verify_ssl | default('true') }}"
+  loop: "{{ ansible_tower.credential_types }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: create credentials for this organization
   tower_credential:
     name: "{{ item.1.name }}"
@@ -22,3 +39,14 @@
   loop_control:
     label: "{{ item.0.name }} {{ item.1.name }}"
   no_log: "{{ ansible_debug_no_log | default('true') }}"
+
+- name: create custom credentials
+  include_tasks: custom_credentials.yml
+  loop: "{{ ansible_tower.organizations | subelements('custom_credentials') }}"
+  loop_control:
+    loop_var: this_custom_credential
+    label: "{{ this_custom_credential.0.name }} {{ this_custom_credential.1.name }}"
+  no_log: "{{ ansible_debug_no_log | default('true') }}"
+  when:
+    - this_custom_credential.1.type is defined
+    - this_custom_credential.1.state == 'present'
